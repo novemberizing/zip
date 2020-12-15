@@ -52,3 +52,11 @@ Mkfile.old
 dkms.conf
 
 autom4te.cache
+
+# Autotools
+config.h
+config.log
+config.status
+Makefile
+stamp-h1
+.deps
