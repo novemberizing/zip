@@ -60,3 +60,4 @@ config.status
 Makefile
 stamp-h1
 .deps
+src/novemberizing-zip
