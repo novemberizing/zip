@@ -13,7 +13,24 @@
 
 #include "zip.h"
 
-static int __mkdir(const char * fullpath, char * path, int isfile) {
+static char * __filename(char * o, uint32_t len, const char * path) {
+    if(o && len > 0 && path) {
+        const char * s = strrchr(path, '/');
+        if(s) {
+            strncpy(o, s + 1, len);
+        } else {
+            strncpy(o, path, len);
+        }
+        s = strrchr(path, '.');
+        uint32_t extension_len = strlen(s);
+        o[strlen(o) - extension_len] = 0;
+    }
+    return o;
+}
+
+static int __mkdir(char * p, int isfile) {
+    char * path = malloc(strlen(p) + 1);
+    strcpy(path, p);
     int len = strlen(path);
     int progress = 0;
     char * work = (char *) malloc(len + 2);
@@ -28,7 +45,6 @@ static int __mkdir(const char * fullpath, char * path, int isfile) {
         strcpy(&work[progress], name);
         progress += strlen(name);
         work[progress] = 0;
-        printf("%s\n", work);
         name = strtok(NULL, "/");
         if(name) {
             mkdir(work, 0755);
@@ -37,10 +53,12 @@ static int __mkdir(const char * fullpath, char * path, int isfile) {
                 mkdir(work, 0755);
             }
             free(work);
+            free(path);
             return 0;
         }
     }
     free(work);
+    free(path);
     return -1;
 }
 
@@ -166,6 +184,10 @@ static Item * __find_item(Root * root, const char * filename);
 static Item * __generate_file_tag(Root * root, FILE * fp);
 static Item * __generate_central_tag(Root * root, FILE * fp);
 static End * __generate_end_tag(Root * root, FILE * fp);
+
+static int __inflate(Item * item, FILE * source, const char * filepath);
+static int __deflate(Item * item, FILE * source, const char * filepath, int level);
+
 
 static End * __generate_end_tag(Root * root, FILE * fp)
 {
@@ -380,6 +402,116 @@ static Item * __generate_item(Root * root)
     return NULL;
 }
 
+/**
+ * https://zlib.net/zlib_how.html
+ */
+#define CHUNK 16384
+
+static int __inflate(Item * item, FILE * source, const char * filepath)
+{
+    // DECLARE
+    int ret;
+    unsigned have;
+    z_stream strm = { 0, };
+    unsigned char in[CHUNK];
+    unsigned char out[CHUNK];
+
+    // ALLOCATE INFLATE STATE
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    strm.avail_in = 0;
+    strm.next_in = Z_NULL;
+
+    printf("offset (%d)\n", item->file.offset);
+    if(fseek(source, item->file.offset + item->file.data->filename + item->file.data->extra + sizeof(File), SEEK_SET) < 0) {
+        fprintf(stdout, "fail to __inflate caused by fseek (%d)\n", errno);
+        return -1;
+    }
+    printf("%d\n", item->file.offset + item->file.data->filename + item->file.data->extra + sizeof(File));
+    printf("%d\n", ftell(source));
+
+    FILE * destination = fopen(filepath, "w+");
+    if(destination == NULL) {
+        fprintf(stdout, "fail to __inflate caused by fopen (%d)\n", errno);
+        return -1;
+    }
+    printf("method: %d\n", item->file.data->method);
+
+    ret = inflateInit2(&strm, -MAX_WBITS);
+    if (ret != Z_OK) {
+        fprintf(stdout, "fail to __inflate caused by inflateInit\n");
+        return -1;
+    }
+
+    uint32_t remain = item->file.data->data.compressed;
+
+    do {
+        uint32_t progress = remain > CHUNK ? CHUNK : remain;
+        printf("%d\n", progress);
+        strm.avail_in = fread(in, 1, progress, source);
+        printf("%d\n", ftell(source));
+        printf("%d\n", strm.avail_in);
+        if (ferror(source)) {
+            (void)inflateEnd(&strm);
+            fclose(destination);
+            return -1;
+        }
+        if (strm.avail_in == 0) {
+            printf("why avail in == 0 && %d\n", progress);
+            break;
+        }
+        strm.next_in = in;
+        /* run inflate() on input until output buffer not full */
+        do {
+            strm.avail_out = CHUNK;
+            strm.next_out = out;
+            ret = inflate(&strm, Z_SYNC_FLUSH);
+            switch (ret) {
+            case Z_NEED_DICT:
+                ret = Z_DATA_ERROR;     /* and fall through */
+                printf("need dic error\n");
+                (void)inflateEnd(&strm);
+                fclose(destination);
+                return -1;
+            case Z_DATA_ERROR:
+                printf("data error : %s\n", strm.msg);
+                (void)inflateEnd(&strm);
+                fclose(destination);
+                return -1;
+            case Z_MEM_ERROR:
+                printf("memory error\n");
+                (void)inflateEnd(&strm);
+                fclose(destination);
+                return -1;
+            case Z_STREAM_ERROR:
+                printf("stream error\n");
+                (void)inflateEnd(&strm);
+                fclose(destination);
+                return -1;
+            }
+
+            have = CHUNK - strm.avail_out;
+            printf("have: %d\n", have);
+            if (fwrite(out, 1, have, destination) != have || ferror(destination)) {
+                (void)inflateEnd(&strm);
+                fclose(destination);
+                return -1;
+            }
+        } while (strm.avail_out == 0);
+        remain -= progress;
+        printf("%d\n", remain);
+    } while (ret != Z_STREAM_END);
+    fprintf(stdout, "succeed to inflate\n");
+    fclose(destination);
+    return 0;
+}
+
+static int __deflate(Item * item, FILE * source, const char * filepath, int level)
+{
+    printf("deflate\n");
+}
+
 static uint32_t __get_signature(FILE * fp);
 
 int unzip(const char * path)
@@ -418,23 +550,49 @@ int unzip(const char * path)
                 break;
             }
         }
-        Item * item = root.head;
-        char fullpath[PATH_MAX];
-        if(path[0] != '/') {
-            if(getcwd(fullpath, sizeof(fullpath)) == NULL) {
-                __clear_root(&root);
-                fclose(fp);
-                fprintf(stdout, "fail to unzip caused by getcwd (%d)\n", errno);
-            }
-            printf("%s - %d\n", fullpath, PATH_MAX);
-        }
-        while(item) {
-            fprintf(stdout, "filename: %s\n", item->file.name);
 
-            __mkdir(fullpath, item->file.name, 1);
+        Item * item = root.head;
+        char workdir[256];
+        workdir[0] = 0;
+        __filename(workdir, 256, path);
+        char filepath[PATH_MAX];
+
+        while(item) {
+            snprintf(filepath, PATH_MAX, "%s/%s", workdir, item->file.name);
+            printf("filepath: %s\n", filepath);
+            // FILE CHECK
+            __mkdir(filepath, 1);
+            printf("%s\n", filepath);
+            __inflate(item, fp, filepath);
+
 
             item = item->next;
         }
+
+
+
+
+        // char fullpath[PATH_MAX];
+        // if(path[0] != '/') {
+        //     if(getcwd(fullpath, sizeof(fullpath)) == NULL) {
+        //         __clear_root(&root);
+        //         fclose(fp);
+        //         fprintf(stdout, "fail to unzip caused by getcwd (%d)\n", errno);
+        //     }
+        //     printf("%s - %d\n", fullpath, PATH_MAX);
+        // }
+        // printf("fullpath: %s\n", fullpath);
+        // char fname[256];
+        // printf("%s\n", __filename(fname, 256, path));
+        // while(item) {
+        //     fprintf(stdout, "filename: %s\n", item->file.name);
+            
+            
+
+        //     __mkdir(fullpath, item->file.name, 1);
+
+        //     item = item->next;
+        // }
         __clear_root(&root);
         fclose(fp);
     }

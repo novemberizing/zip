@@ -4,6 +4,6 @@
 
 int main(){
     printf("hello world\n");
-    unzip("doom.zip");
+//    unzip("doom.zip");
     return 0;
 }
