@@ -90,7 +90,7 @@ EGREP="/usr/bin/grep -E"
 FGREP="/usr/bin/grep -F"
 
 # A BSD- or MS-compatible name lister.
-NM="/usr/bin/nm -B"
+NM="/home/novemberizing/Workspace/novemberizing/dev/emscripten/emsdk/upstream/bin/llvm-nm"
 
 # Whether we need soft or hard links.
 LN_S="ln -s"
@@ -141,7 +141,7 @@ DLLTOOL="false"
 sharedlib_from_linklib_cmd="printf %s\\n"
 
 # The archiver.
-AR="ar"
+AR="/home/novemberizing/Workspace/novemberizing/dev/emscripten/emsdk/upstream/emscripten/emar"
 
 # Flags to create an archive.
 AR_FLAGS="cr"
@@ -153,7 +153,7 @@ archiver_list_spec="@"
 STRIP="strip"
 
 # Commands used to install an old-style archive.
-RANLIB="ranlib"
+RANLIB="/home/novemberizing/Workspace/novemberizing/dev/emscripten/emsdk/upstream/emscripten/emranlib"
 old_postinstall_cmds="chmod 644 \$oldlib~\$RANLIB \$tool_oldlib"
 old_postuninstall_cmds=""
 
@@ -161,25 +161,25 @@ old_postuninstall_cmds=""
 lock_old_archive_extraction=no
 
 # A C compiler.
-LTCC="gcc"
+LTCC="/home/novemberizing/Workspace/novemberizing/dev/emscripten/emsdk/upstream/emscripten/emcc"
 
 # LTCC compiler flags.
 LTCFLAGS="-g -O2"
 
 # Take the output of nm and produce a listing of raw symbols and C names.
-global_symbol_pipe="sed -n -e 's/^.*[	 ]\\([ABCDGIRSTW][ABCDGIRSTW]*\\)[	 ][	 ]*\\([_A-Za-z][_A-Za-z0-9]*\\)\$/\\1 \\2 \\2/p' | sed '/ __gnu_lto/d'"
+global_symbol_pipe="sed -n -e 's/^.*[	 ]\\([BCDEGRST][BCDEGRST]*\\)[	 ][	 ]*\\([_A-Za-z][_A-Za-z0-9]*\\)\$/\\1 \\2 \\2/p' | sed '/ __gnu_lto/d'"
 
 # Transform the output of nm in a proper C declaration.
-global_symbol_to_cdecl="sed -n -e 's/^T .* \\(.*\\)\$/extern int \\1();/p' -e 's/^[ABCDGIRSTW][ABCDGIRSTW]* .* \\(.*\\)\$/extern char \\1;/p'"
+global_symbol_to_cdecl="sed -n -e 's/^T .* \\(.*\\)\$/extern int \\1();/p' -e 's/^[BCDEGRST][BCDEGRST]* .* \\(.*\\)\$/extern char \\1;/p'"
 
 # Transform the output of nm into a list of symbols to manually relocate.
 global_symbol_to_import=""
 
 # Transform the output of nm in a C name address pair.
-global_symbol_to_c_name_address="sed -n -e 's/^: \\(.*\\) .*\$/  {\"\\1\", (void *) 0},/p' -e 's/^[ABCDGIRSTW][ABCDGIRSTW]* .* \\(.*\\)\$/  {\"\\1\", (void *) \\&\\1},/p'"
+global_symbol_to_c_name_address="sed -n -e 's/^: \\(.*\\) .*\$/  {\"\\1\", (void *) 0},/p' -e 's/^[BCDEGRST][BCDEGRST]* .* \\(.*\\)\$/  {\"\\1\", (void *) \\&\\1},/p'"
 
 # Transform the output of nm in a C name address pair when lib prefix is needed.
-global_symbol_to_c_name_address_lib_prefix="sed -n -e 's/^: \\(.*\\) .*\$/  {\"\\1\", (void *) 0},/p' -e 's/^[ABCDGIRSTW][ABCDGIRSTW]* .* \\(lib.*\\)\$/  {\"\\1\", (void *) \\&\\1},/p' -e 's/^[ABCDGIRSTW][ABCDGIRSTW]* .* \\(.*\\)\$/  {\"lib\\1\", (void *) \\&\\1},/p'"
+global_symbol_to_c_name_address_lib_prefix="sed -n -e 's/^: \\(.*\\) .*\$/  {\"\\1\", (void *) 0},/p' -e 's/^[BCDEGRST][BCDEGRST]* .* \\(lib.*\\)\$/  {\"\\1\", (void *) \\&\\1},/p' -e 's/^[BCDEGRST][BCDEGRST]* .* \\(.*\\)\$/  {\"lib\\1\", (void *) \\&\\1},/p'"
 
 # The name lister interface.
 nm_interface="BSD nm"
@@ -249,7 +249,7 @@ runpath_var=LD_RUN_PATH
 shlibpath_var=LD_LIBRARY_PATH
 
 # Is shlibpath searched before the hard-coded library search path?
-shlibpath_overrides_runpath=yes
+shlibpath_overrides_runpath=no
 
 # Format of library name prefix.
 libname_spec="lib\$name"
@@ -281,7 +281,7 @@ finish_eval=""
 hardcode_into_libs=yes
 
 # Compile-time system search path for libraries.
-sys_lib_search_path_spec="/usr/lib/gcc/x86_64-linux-gnu/9 /usr/lib/x86_64-linux-gnu /usr/lib /lib/x86_64-linux-gnu /lib "
+sys_lib_search_path_spec="/home/novemberizing/Workspace/novemberizing/dev/emscripten/emsdk/upstream/lib/clang/12.0.0 /usr/lib/gcc/x86_64-linux-gnu/9 /usr/lib/x86_64-linux-gnu /usr/lib64 /lib/x86_64-linux-gnu /lib64 /usr/lib /home/novemberizing/Workspace/novemberizing/dev/emscripten/emsdk/upstream/lib /lib "
 
 # Detected run-time system search path for libraries.
 sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib/x86_64-linux-gnu/libfakeroot /usr/local/lib /usr/local/lib/x86_64-linux-gnu /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu "
@@ -304,7 +304,7 @@ striplib="strip --strip-unneeded"
 
 
 # The linker used to build libraries.
-LD="/usr/bin/ld -m elf_x86_64"
+LD="/home/novemberizing/Workspace/novemberizing/dev/emscripten/emsdk/upstream/emscripten/emcc"
 
 # How to create reloadable object files.
 reload_flag=" -r"
@@ -314,13 +314,13 @@ reload_cmds="\$LD\$reload_flag -o \$output\$reload_objs"
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs~\$RANLIB \$tool_oldlib"
 
 # A language specific compiler.
-CC="gcc"
+CC="/home/novemberizing/Workspace/novemberizing/dev/emscripten/emsdk/upstream/emscripten/emcc"
 
 # Is the compiler the GNU compiler?
 with_gcc=yes
 
 # Compiler flag to turn off builtin functions.
-no_builtin_flag=" -fno-builtin"
+no_builtin_flag=" -fno-builtin -fno-rtti -fno-exceptions"
 
 # Additional compiler flags for building library objects.
 pic_flag=" -fPIC -DPIC"
@@ -344,7 +344,7 @@ allow_libtool_libs_with_static_runtimes=no
 export_dynamic_flag_spec="\$wl--export-dynamic"
 
 # Compiler flag to generate shared objects directly from archives.
-whole_archive_flag_spec="\$wl--whole-archive\$convenience \$wl--no-whole-archive"
+whole_archive_flag_spec=""
 
 # Whether the compiler copes with passing no objects directly.
 compiler_needs_object="no"

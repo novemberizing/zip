@@ -63,3 +63,4 @@ stamp-h1
 src/novemberizing-zip
 config.h.in~
 .libs
+a.wasm
