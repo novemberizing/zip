@@ -9,6 +9,8 @@ AM_CONDITIONAL([EMSCRIPTEN], [test "x$enable_emscripten" = "xyes"])
 AC_PROG_CC
 AM_PROG_AR
 
+AC_CONFIG_MACRO_DIRS([m4])
+
 dnl Setup for automake
 AM_INIT_AUTOMAKE
 
