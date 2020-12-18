@@ -1,15 +1,15 @@
 #ifndef   __NOVEMBERIZING_ZIP__H__
 #define   __NOVEMBERIZING_ZIP__H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#else
+#ifndef EMSCRIPTEN_KEEPALIVE
+#define EMSCRIPTEN_KEEPALIVE
+#endif 
+#endif 
 
-int unzip(const char * path);
-int zip(const char * path);
-
-#ifdef __cplusplus
-}
-#endif // __cplusplus
+EMSCRIPTEN_KEEPALIVE int unzip(const char * path);
+EMSCRIPTEN_KEEPALIVE int zip(const char * path);
 
 #endif // __NOVEMBERIZING_ZIP__H__

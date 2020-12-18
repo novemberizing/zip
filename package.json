@@ -4,7 +4,7 @@
   "description": "novemberizing zip for javascript",
   "main": "src/index.js",
   "scripts": {
-    "prebuild": "cd core && emscripten ./configure",
+    "prebuild": "cd core && emconfigure ./configure --bindir=${PWD}/../src --datadir=${PWD}/../src --libdir=${PWD}/lib && emmake make clean && emmake make && emmake make install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,5 +24,11 @@
   "bugs": {
     "url": "https://github.com/novemberizing/zip/issues"
   },
-  "homepage": "https://github.com/novemberizing/zip#readme"
+  "homepage": "https://github.com/novemberizing/zip#readme",
+  "devDependencies": {
+    "esm": "^3.2.25"
+  },
+  "dependencies": {
+    "axios": "^0.21.0"
+  }
 }

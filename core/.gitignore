@@ -12,3 +12,4 @@ Makefile
 *.o
 *.wasm
 *.js
+lib

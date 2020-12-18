@@ -13,6 +13,8 @@
 
 #include "novemberizing/zip.h"
 
+
+
 static char * __filename(char * o, uint32_t len, const char * path) {
     if(o && len > 0 && path) {
         const char * s = strrchr(path, '/');
@@ -517,7 +519,7 @@ static uint32_t __get_signature(FILE * fp);
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int unzip(const char * path)
+    EMSCRIPTEN_KEEPALIVE int unzip(const char * path)
     {
         FILE * fp = fopen(path, "rb");
         if(fp) {
@@ -576,7 +578,7 @@ extern "C" {
         }
         return -1;
     }
-    int zip(const char * path)
+    EMSCRIPTEN_KEEPALIVE int zip(const char * path)
     {
         fprintf(stdout, "implement this\n");
         return -1;
